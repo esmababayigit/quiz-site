@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Beni Ne Kadar Tanıyosun🥺💞?</title>
+    <title>Beni Ne Kadar Tanıyorsun🥺💞?</title>
     <style>
         /* Arka Plan */
         body {
@@ -13,7 +13,7 @@
             padding: 0;
             background-color: #faaedf;
             text-align: center;
-            overflow: hidden;
+            overflow: auto;
             position: relative;
         }
         .hearts-container {
@@ -251,12 +251,9 @@
             }
             resultHTML += "</ul>";
 
-            document.getElementById("quiz").innerHTML = resultHTML;
+            resultHTML += `<button onclick="restartQuiz()">Tekrar Başla</button>`;
 
-            setTimeout(() => {
-                localStorage.removeItem("userName");
-                window.location.reload();
-            }, 10000); // 10 saniye sonra sayfayı yenile ve kullanıcı adını sil
+            document.getElementById("quiz").innerHTML = resultHTML;
         }
 
         function saveScore(userName, score) {
@@ -274,6 +271,10 @@
                 .replace(/ş/g, "s")
                 .replace(/ğ/g, "g")
                 .trim();
+        }
+
+        function restartQuiz() {
+            window.location.reload();
         }
 
         function createHearts() {
