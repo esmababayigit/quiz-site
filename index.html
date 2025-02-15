@@ -138,11 +138,11 @@
 
     <script>
         const questions = [
-            { question: "Tam Doğum Tarihim Nedir?", answer: ["2 Şubat 2005", "İki Şubat 2005", "02.02.2005"] },
+            { question: "Tam Doğum Tarihim Nedir?", answer: ["2 Şubat 2005", "02.02.2005"] },
             { question: "Bölümüm Nedir", answer: ["Malzeme mühendisliği", "Malzeme Bilimi ve Mühendisliği"] },
             { question: "Burcum Nedir?", answer: "Kova" },
             { question: "Kaç Kedim Var?", answer: ["iki", "2"] },
-            { question: "Kedilerimin Adları Ne?", answer: ["Sakız, Küçük", "Küçük, Sakız", "Sakız ve Küçük", "Küçük ve Sakız", "Sakız Küçük", "Küçük Sakız"] },
+            { question: "Kedilerimin Adları Ne?", answer: ["Sakız, Küçük"] },
             { question: "En Sevdiğim Yemek?", answer: "sarma" },
             { question: "En Sevdiğim Dizi?", answer: "Sons of Anarchy" }
         ];
@@ -158,7 +158,6 @@
             document.getElementById("submitNameBtn").addEventListener("click", () => {
                 userName = document.getElementById("userName").value;
                 if (userName) {
-                    localStorage.setItem("userName", userName);
                     document.getElementById("welcomeMessage").style.display = "none";
                     document.getElementById("userName").style.display = "none";
                     document.getElementById("submitNameBtn").style.display = "none";
@@ -220,7 +219,7 @@
             if (!isCorrect) {
                 wrongAnswers.push({
                     question: questions[currentQuestionIndex].question,
-                    correctAnswer: correctAnswer,
+                    correctAnswer: Array.isArray(correctAnswer) ? correctAnswer[0] : correctAnswer, // Sadece ilk doğru cevabı göster
                     userAnswer: document.getElementById("answer").value
                 });
             }
@@ -239,27 +238,43 @@
             if (wrongAnswers.length > 0) {
                 resultHTML += `<h3>Yanlış Cevapladığınız Sorular:</h3><ul>`;
                 wrongAnswers.forEach(wrongAnswer => {
-                    resultHTML += `<li><b>${wrongAnswer.question}</b><br>Doğru Cevap: ${Array.isArray(wrongAnswer.correctAnswer) ? wrongAnswer.correctAnswer.join(", ") : wrongAnswer.correctAnswer}<br>Sizin Cevabınız: ${wrongAnswer.userAnswer}</li>`;
+                    resultHTML += `<li><b>${wrongAnswer.question}</b><br>Doğru Cevap: ${wrongAnswer.correctAnswer}<br>Sizin Cevabınız: ${wrongAnswer.userAnswer}</li>`;
                 });
                 resultHTML += `</ul>`;
             }
 
-            resultHTML += `<h3>Sonuçlar</h3><ul>`;
-            let scores = JSON.parse(localStorage.getItem("scores")) || {};
-            for (let user in scores) {
-                resultHTML += `<li><b>${user}</b>: ${scores[user]}</li>`;
-            }
-            resultHTML += "</ul>";
-
+            resultHTML += `<h3>Sonuçlar</h3><ul id="scoreList"></ul>`;
             resultHTML += `<button onclick="restartQuiz()">Tekrar Başla</button>`;
 
             document.getElementById("quiz").innerHTML = resultHTML;
+            fetchScores();
         }
 
         function saveScore(userName, score) {
-            let scores = JSON.parse(localStorage.getItem("scores")) || {};
-            scores[userName] = score;
-            localStorage.setItem("scores", JSON.stringify(scores));
+            fetch('http://localhost:3000/api/scores', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ userName, score })
+            })
+            .then(response => response.json())
+            .then(data => console.log('Success:', data))
+            .catch((error) => console.error('Error:', error));
+        }
+
+        function fetchScores() {
+            fetch('http://localhost:3000/api/scores')
+                .then(response => response.json())
+                .then(data => {
+                    let scoreList = document.getElementById('scoreList');
+                    data.forEach(score => {
+                        let li = document.createElement('li');
+                        li.textContent = `${score.userName}: ${score.score}`;
+                        scoreList.appendChild(li);
+                    });
+                })
+                .catch((error) => console.error('Error:', error));
         }
 
         function normalizeText(text) {
