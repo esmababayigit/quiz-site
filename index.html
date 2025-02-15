@@ -67,6 +67,7 @@
             font-size: 18px;
             color: #d44d61;
             font-weight: bold;
+            display: none; /* Başlangıçta gizli */
         }
 
         /* Cevap Input */
@@ -99,7 +100,7 @@
 
         button:hover {
             background-color: #d44d61;
-            transform: scale(1.05); /* Hoverda buton büyüsün */
+            transform: scale(1.05);
         }
 
         /* Sonuç Ekranı */
@@ -120,17 +121,19 @@
             border-radius: 8px;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
         }
+
     </style>
 </head>
 <body>
     <div class="hearts-container"></div>
     <div id="quiz">
-        <h2 id="question">Soru yükleniyor...</h2>
-        <input type="text" id="answer" placeholder="Cevabınızı yazın">
-        <button id="submitBtn"><b>Gönder</b></button>
+        <h2 id="welcomeMessage">HOŞGELDİN🥺💞🤍🩷</h2>
+        <input type="text" id="userName" placeholder="Adınızı yazın">
+        <button id="submitNameBtn">Başla</button>
+        <h2 id="question" style="display: none;">Soru yükleniyor...</h2>
+        <input type="text" id="answer" placeholder="Cevabınızı yazın" style="display: none;">
+        <button id="submitBtn" style="display: none;"><b>Gönder</b></button>
         <p id="timer">Süre: 20</p>
-        <input type="text" id="userName" placeholder="Adınızı yazın" style="display: none;">
-        <button id="submitNameBtn" style="display: none;">Başla</button>
     </div>
 
     <script>
@@ -152,14 +155,19 @@
         let userName = "";
 
         document.addEventListener("DOMContentLoaded", () => {
-            // Adı alma butonuna tıklanma olayını ekleyelim
+            
             document.getElementById("submitNameBtn").addEventListener("click", () => {
                 userName = document.getElementById("userName").value;
                 if (userName) {
                     localStorage.setItem("userName", userName); // localStorage'a kaydediyoruz
-                    loadQuestion();
+                    document.getElementById("welcomeMessage").style.display = "none";
                     document.getElementById("userName").style.display = "none";
                     document.getElementById("submitNameBtn").style.display = "none";
+                    document.getElementById("question").style.display = "block";
+                    document.getElementById("answer").style.display = "block";
+                    document.getElementById("submitBtn").style.display = "block";
+                    document.getElementById("timer").style.display = "block";
+                    loadQuestion();
                 } else {
                     alert("Lütfen adınızı girin.");
                 }
@@ -168,6 +176,13 @@
             // Eğer kullanıcı adı varsa, otomatik olarak başlatma ekranını gizleyelim
             if (localStorage.getItem("userName")) {
                 userName = localStorage.getItem("userName");
+                document.getElementById("welcomeMessage").style.display = "none";
+                document.getElementById("userName").style.display = "none";
+                document.getElementById("submitNameBtn").style.display = "none";
+                document.getElementById("question").style.display = "block";
+                document.getElementById("answer").style.display = "block";
+                document.getElementById("submitBtn").style.display = "block";
+                document.getElementById("timer").style.display = "block";
                 loadQuestion();
             } else {
                 document.getElementById("userName").style.display = "block";
@@ -270,7 +285,7 @@
         function createHearts() {
             const colors = ["#ff91a4", "#ffffff", "#c084fc", "#aee2ff"]; // Pembe, Beyaz, Mor, Bebek Mavisi
             const emojis = ["💗", "🤍", "💜", "💙","💞","💖","🥰","🥺","👻","😻","😽","🫶🏻"];
-            const numHearts = 100; // Kalp sayısı
+            const numHearts = 200; // Kalp sayısı
 
             const container = document.querySelector(".hearts-container");
 
