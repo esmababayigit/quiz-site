@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beni Ne Kadar Tanıyosun🥺💞?</title>
+    <style>
+        /* Arka Plan */
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #faaedf;
+            text-align: center;
+            overflow: hidden;
+            position: relative;
+        }
+        .hearts-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .heart {
+            position: absolute;
+            font-size: 20px;
+            opacity: 0.85;
+            animation: float 15s linear infinite;
+        }
+
+        /* Arka plan animasyonu */
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* Quiz Box */
+        #quiz {
+            max-width: 600px;
+            margin: auto;
+            padding: 30px;
+            border-radius: 15px;
+            background: rgba(255, 175, 195, 0.9);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        #quiz:hover {
+            transform: scale(1.05); /* Hoverda biraz büyüsün */
+        }
+
+        /* Başlık */
+        h2 {
+            font-size: 24px;
+            color: #270505;
+            margin-bottom: 20px;
+        }
+
+        /* Timer */
+        #timer {
+            font-size: 18px;
+            color: #d44d61;
+            font-weight: bold;
+        }
+
+        /* Cevap Input */
+        input {
+            width: 80%;
+            padding: 12px;
+            margin: 15px 0;
+            font-size: 18px;
+            border: 2px solid #f8658f;
+            border-radius: 10px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            border-color: #d44d61;
+        }
+
+        /* Buton */
+        button {
+            padding: 12px 20px;
+            font-size: 18px;
+            background-color: #fd97b4;
+            color: rgb(252, 87, 147);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        button:hover {
+            background-color: #d44d61;
+            transform: scale(1.05); /* Hoverda buton büyüsün */
+        }
+
+        /* Sonuç Ekranı */
+        h3 {
+            color: #280606;
+            margin-top: 20px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #fea7bd;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="hearts-container"></div>
+    <div id="quiz">
+        <h2 id="question">Soru yükleniyor...</h2>
+        <input type="text" id="answer" placeholder="Cevabınızı yazın">
+        <button id="submitBtn"><b>Gönder</b></button>
+        <p id="timer">Süre: 20</p>
+        <input type="text" id="userName" placeholder="Adınızı yazın" style="display: none;">
+        <button id="submitNameBtn" style="display: none;">Başla</button>
+    </div>
+
+    <script>
+        const questions = [
+            { question: "Tam Doğum Tarihim Nedir?", answer: ["2 Şubat 2005", "İki Şubat 2005", "02.02.2005"] },
+            { question: "Bölümüm Nedir", answer: ["Malzeme mühendisliği", "Malzeme Bilimi ve Mühendisliği"] },
+            { question: "Burcum Nedir?", answer: "Kova" },
+            { question: "Kaç Kedim Var?", answer: ["iki", "2"] },
+            { question: "Kedilerimin Adları Ne?", answer: ["Sakız, Küçük", "Küçük, Sakız", "Sakız ve Küçük", "Küçük ve Sakız", "Sakız Küçük", "Küçük Sakız"] },
+            { question: "En Sevdiğim Yemek?", answer: "sarma" },
+            { question: "En Sevdiğim Dizi?", answer: "Sons of Anarchy" }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let timeLimit = 15;
+        let timer;
+        let wrongAnswers = [];
+        let userName = "";
+
+        document.addEventListener("DOMContentLoaded", () => {
+            // Adı alma butonuna tıklanma olayını ekleyelim
+            document.getElementById("submitNameBtn").addEventListener("click", () => {
+                userName = document.getElementById("userName").value;
+                if (userName) {
+                    localStorage.setItem("userName", userName); // localStorage'a kaydediyoruz
+                    loadQuestion();
+                    document.getElementById("userName").style.display = "none";
+                    document.getElementById("submitNameBtn").style.display = "none";
+                } else {
+                    alert("Lütfen adınızı girin.");
+                }
+            });
+
+            // Eğer kullanıcı adı varsa, otomatik olarak başlatma ekranını gizleyelim
+            if (localStorage.getItem("userName")) {
+                userName = localStorage.getItem("userName");
+                loadQuestion();
+            } else {
+                document.getElementById("userName").style.display = "block";
+                document.getElementById("submitNameBtn").style.display = "block";
+            }
+
+            document.getElementById("submitBtn").addEventListener("click", checkAnswer);
+        });
+
+        function loadQuestion() {
+            clearTimeout(timer);
+            if (currentQuestionIndex >= questions.length) {
+                return showResult();
+            }
+
+            document.getElementById("question").innerText = questions[currentQuestionIndex].question;
+            document.getElementById("answer").value = "";
+            document.getElementById("timer").innerText = `Süre: ${timeLimit}`;
+            startTimer();
+        }
+
+        function startTimer() {
+            let timeLeft = timeLimit;
+            timer = setInterval(() => {
+                document.getElementById("timer").innerText = `Süre: ${timeLeft}`;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    nextQuestion();
+                }
+                timeLeft--;
+            }, 1000);
+        }
+
+        function checkAnswer() {
+            clearInterval(timer);
+            let userAnswer = normalizeText(document.getElementById("answer").value);
+            let correctAnswer = questions[currentQuestionIndex].answer;
+
+            let isCorrect = false;
+            if (Array.isArray(correctAnswer)) {
+                if (correctAnswer.some(ans => normalizeText(ans) === userAnswer)) {
+                    isCorrect = true;
+                    score++;
+                }
+            } else {
+                if (normalizeText(correctAnswer) === userAnswer) {
+                    isCorrect = true;
+                    score++;
+                }
+            }
+
+            if (!isCorrect) {
+                wrongAnswers.push({
+                    question: questions[currentQuestionIndex].question,
+                    correctAnswer: correctAnswer,
+                    userAnswer: document.getElementById("answer").value
+                });
+            }
+            nextQuestion();
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+
+        function showResult() {
+            let resultHTML = `<h2>Quiz Bitti!</h2><p>Puanın: ${score} / ${questions.length}</p>`;
+
+            // Skoru localStorage'a kaydedelim
+            saveScore(userName, score);
+
+            resultHTML += `<h3>Sonuçlar</h3><ul>`;
+            let scores = JSON.parse(localStorage.getItem("scores")) || {};
+            for (let user in scores) {
+                resultHTML += `<li><b>${user}</b>: ${scores[user]}</li>`;
+            }
+            resultHTML += "</ul>";
+
+            document.getElementById("quiz").innerHTML = resultHTML;
+        }
+
+        function saveScore(userName, score) {
+            let scores = JSON.parse(localStorage.getItem("scores")) || {};
+            scores[userName] = score;
+            localStorage.setItem("scores", JSON.stringify(scores));
+        }
+
+        function normalizeText(text) {
+            return text.toLowerCase()
+                .replace(/ı/g, "i")
+                .replace(/ö/g, "o")
+                .replace(/ü/g, "u")
+                .replace(/ç/g, "c")
+                .replace(/ş/g, "s")
+                .replace(/ğ/g, "g")
+                .trim();
+        }
+
+        function createHearts() {
+            const colors = ["#ff91a4", "#ffffff", "#c084fc", "#aee2ff"]; // Pembe, Beyaz, Mor, Bebek Mavisi
+            const emojis = ["💗", "🤍", "💜", "💙","💞","💖","🥰","🥺","👻","😻","😽","🫶🏻"];
+            const numHearts = 100; // Kalp sayısı
+
+            const container = document.querySelector(".hearts-container");
+
+            for (let i = 0; i < numHearts; i++) {
+                let heart = document.createElement("div");
+                heart.classList.add("heart");
+                heart.innerHTML = emojis[Math.floor(Math.random() * emojis.length)];
+                heart.style.left = Math.random() * 100 + "vw";
+                heart.style.top = Math.random() * 100 + "vh";
+                heart.style.animationDuration = Math.random() * 10 + 5 + "s";
+                container.appendChild(heart);
+            }
+        }
+
+        createHearts();
+    </script>
+</body>
+</html>
