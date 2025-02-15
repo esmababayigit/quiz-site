@@ -100,7 +100,7 @@
 
         button:hover {
             background-color: #d44d61;
-            transform: scale(1.05);
+            transform: scale(1.05); /* Hoverda buton büyüsün */
         }
 
         /* Sonuç Ekranı */
@@ -155,11 +155,10 @@
         let userName = "";
 
         document.addEventListener("DOMContentLoaded", () => {
-            
             document.getElementById("submitNameBtn").addEventListener("click", () => {
                 userName = document.getElementById("userName").value;
                 if (userName) {
-                    localStorage.setItem("userName", userName); // localStorage'a kaydediyoruz
+                    localStorage.setItem("userName", userName);
                     document.getElementById("welcomeMessage").style.display = "none";
                     document.getElementById("userName").style.display = "none";
                     document.getElementById("submitNameBtn").style.display = "none";
@@ -172,22 +171,6 @@
                     alert("Lütfen adınızı girin.");
                 }
             });
-
-            // Eğer kullanıcı adı varsa, otomatik olarak başlatma ekranını gizleyelim
-            if (localStorage.getItem("userName")) {
-                userName = localStorage.getItem("userName");
-                document.getElementById("welcomeMessage").style.display = "none";
-                document.getElementById("userName").style.display = "none";
-                document.getElementById("submitNameBtn").style.display = "none";
-                document.getElementById("question").style.display = "block";
-                document.getElementById("answer").style.display = "block";
-                document.getElementById("submitBtn").style.display = "block";
-                document.getElementById("timer").style.display = "block";
-                loadQuestion();
-            } else {
-                document.getElementById("userName").style.display = "block";
-                document.getElementById("submitNameBtn").style.display = "block";
-            }
 
             document.getElementById("submitBtn").addEventListener("click", checkAnswer);
         });
@@ -251,9 +234,15 @@
 
         function showResult() {
             let resultHTML = `<h2>Quiz Bitti!</h2><p>Puanın: ${score} / ${questions.length}</p>`;
-
-            // Skoru localStorage'a kaydedelim
             saveScore(userName, score);
+
+            if (wrongAnswers.length > 0) {
+                resultHTML += `<h3>Yanlış Cevapladığınız Sorular:</h3><ul>`;
+                wrongAnswers.forEach(wrongAnswer => {
+                    resultHTML += `<li><b>${wrongAnswer.question}</b><br>Doğru Cevap: ${Array.isArray(wrongAnswer.correctAnswer) ? wrongAnswer.correctAnswer.join(", ") : wrongAnswer.correctAnswer}<br>Sizin Cevabınız: ${wrongAnswer.userAnswer}</li>`;
+                });
+                resultHTML += `</ul>`;
+            }
 
             resultHTML += `<h3>Sonuçlar</h3><ul>`;
             let scores = JSON.parse(localStorage.getItem("scores")) || {};
@@ -263,6 +252,11 @@
             resultHTML += "</ul>";
 
             document.getElementById("quiz").innerHTML = resultHTML;
+
+            setTimeout(() => {
+                localStorage.removeItem("userName");
+                window.location.reload();
+            }, 10000); // 10 saniye sonra sayfayı yenile ve kullanıcı adını sil
         }
 
         function saveScore(userName, score) {
