@@ -135,6 +135,28 @@
         <button id="submitBtn" style="display: none;"><b>Gönder</b></button>
         <p id="timer">Süre: 20</p>
     </div>
+    <button id="resultsBtn" style="display: block; margin-top: 10px;">Sonuçlar</button>
+<ul id="scoreList"></ul>
+
+<script>
+    document.getElementById("resultsBtn").addEventListener("click", fetchScores);
+
+    function fetchScores() {
+        fetch('http://localhost:3000/api/scores')
+            .then(response => response.json())
+            .then(data => {
+                let scoreList = document.getElementById('scoreList');
+                scoreList.innerHTML = "";
+                data.forEach(score => {
+                    let li = document.createElement('li');
+                    li.textContent = `${score.userName}: ${score.score}`;
+                    scoreList.appendChild(li);
+                });
+            })
+            .catch((error) => console.error('Error:', error));
+    }
+</script>
+
 
     <script>
         const questions = [
