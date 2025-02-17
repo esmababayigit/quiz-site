@@ -16,6 +16,7 @@ const scoreSchema = new mongoose.Schema({
 
 const Score = mongoose.model('Score', scoreSchema);
 
+// Skor kaydetme endpointi
 app.post('/api/scores', (req, res) => {
     const newScore = new Score(req.body);
     newScore.save((err, savedScore) => {
@@ -24,8 +25,9 @@ app.post('/api/scores', (req, res) => {
     });
 });
 
+// Skorları getirme endpointi (Yüksekten düşüğe sıralı)
 app.get('/api/scores', (req, res) => {
-    Score.find({}, (err, scores) => {
+    Score.find({}).sort({ score: -1 }).exec((err, scores) => {
         if (err) return res.status(500).send(err);
         res.status(200).send(scores);
     });
